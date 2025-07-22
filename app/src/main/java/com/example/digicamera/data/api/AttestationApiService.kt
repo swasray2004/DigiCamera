@@ -1,24 +1,30 @@
 package com.example.digicamera.data.api
 
-
+import com.example.digicamera.data.model.AttestationRequest
 import com.example.digicamera.data.model.AttestationResponse
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import retrofit2.Response
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.Part
-
+import retrofit2.http.*
 
 interface AttestationApiService {
-    @Multipart
+
+    @Headers(
+        "Content-Type: application/json",
+        "Accept: application/json"
+    )
     @POST("attest-image")
     suspend fun attestImage(
-        @Part image: MultipartBody.Part,
-        @Part("timestamp") timestamp: RequestBody,
-        @Part("latitude") latitude: RequestBody?,
-        @Part("longitude") longitude: RequestBody?,
-        @Part("device_model") deviceModel: RequestBody,
-        @Part("app_version") appVersion: RequestBody
+        @Body request: AttestationRequest
+    ): Response<AttestationResponse>
+
+    // Alternative endpoint if you need different API structure
+    @Headers(
+        "Content-Type: application/json",
+        "Accept: application/json"
+    )
+    @POST("v1/attestation/create")
+    suspend fun createAttestation(
+        @Body request: AttestationRequest
     ): Response<AttestationResponse>
 }
+

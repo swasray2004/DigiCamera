@@ -28,7 +28,6 @@ class QRCodeGenerator @Inject constructor() {
                 bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
             }
         }
-
         return bitmap
     }
 }

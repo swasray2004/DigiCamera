@@ -7,6 +7,8 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.location.Location
 import android.os.Build
+import android.provider.Settings
+import com.example.digicamera.data.model.CameraInfo
 import com.example.digicamera.data.model.ImageMetadata
 import com.example.digicamera.data.repository.AttestationRepository
 import com.example.digicamera.utils.GalleryUtils
@@ -16,6 +18,7 @@ import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 
+
 class CaptureAndAttestImageUseCase @Inject constructor(
     private val attestationRepository: AttestationRepository,
     private val qrCodeGenerator: QRCodeGenerator,
@@ -24,16 +27,33 @@ class CaptureAndAttestImageUseCase @Inject constructor(
 ) {
     suspend fun execute(
         imageFile: File,
-        location: Location?
+        location: Location?,
+        cameraType: String = "back"
     ): Result<String> {
         return try {
-            // Create metadata
+            // Get device ID
+            val deviceId = Settings.Secure.getString(
+                context.contentResolver,
+                Settings.Secure.ANDROID_ID
+            ) ?: "unknown"
+
+            // Get image dimensions for camera info
+            val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+            val resolution = "${bitmap.width}x${bitmap.height}"
+
+            // Create comprehensive metadata
             val metadata = ImageMetadata(
                 timestamp = System.currentTimeMillis(),
                 latitude = location?.latitude,
                 longitude = location?.longitude,
                 deviceModel = "${Build.MANUFACTURER} ${Build.MODEL}",
-                appVersion = "1.0"
+                appVersion = getAppVersion(),
+                deviceId = deviceId,
+                cameraInfo = CameraInfo(
+                    resolution = resolution,
+                    cameraType = cameraType,
+                    flashUsed = false // You can track this if needed
+                )
             )
 
             // Attest image with API
@@ -67,6 +87,14 @@ class CaptureAndAttestImageUseCase @Inject constructor(
         }
     }
 
+    private fun getAppVersion(): String {
+        return try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "1.0"
+        } catch (e: Exception) {
+            "1.0"
+        }
+    }
     private fun combineImageWithQR(originalBitmap: Bitmap, qrBitmap: Bitmap): Bitmap {
         val combinedBitmap = Bitmap.createBitmap(
             originalBitmap.width,
