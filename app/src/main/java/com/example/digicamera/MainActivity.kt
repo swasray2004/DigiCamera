@@ -18,7 +18,6 @@ import androidx.compose.material3.Surface
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
 import com.example.digicamera.presentation.camera.CameraScreen
 import com.example.digicamera.presentation.home.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
